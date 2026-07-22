@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Room — the AI trend dashboard, in plain language</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+  :root{
+    --bg: #f7f5f0; --panel: #ffffff; --panel-raised: #fbf9f4;
+    --hairline: #e4e0d6; --hairline-strong: #d3cdbd;
+    --amber: #c9711f; --amber-bg: #fbe9d4; --amber-dim: #8a5c1f;
+    --cyan: #0f7a68; --cyan-bg: #dcf0ec;
+    --red: #b8352c; --red-bg: #fbe2df;
+    --text: #211d16; --text-dim: #5c574a; --text-faint: #948d7c;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; padding:28px 32px 60px; }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .pictogram{display:block;}
+
+  .masthead{ display:flex;justify-content:space-between;align-items:flex-end; border-bottom:2px solid var(--text); padding-bottom:16px;margin-bottom:6px; }
+  .masthead h1{ font-family:'Space Grotesk',sans-serif; font-size:27px;font-weight:700;margin:0;letter-spacing:0.2px;display:flex;align-items:center;gap:8px; }
+  .masthead .sub{color:var(--text-dim);font-size:13.5px;margin-top:6px;max-width:480px;line-height:1.5;}
+  .masthead .clock{ font-family:'IBM Plex Mono',monospace;color:var(--amber); font-size:13px;text-align:right; }
+  .clock .date{color:var(--text-dim);font-size:11px;display:block;margin-top:2px;}
+  .demo-banner{ background:var(--amber-bg);border:1px solid var(--hairline-strong); border-left:3px solid var(--amber); padding:10px 14px;font-size:12.5px;color:var(--text-dim); margin:20px 0 22px;line-height:1.5; }
+  .demo-banner b{color:var(--amber-dim);}
+
+  .horizon{ background:var(--panel-raised); border:1px solid var(--hairline-strong); padding:22px 24px 20px; margin-bottom:26px; }
+  .horizon-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .horizon-head h2{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;margin:0;}
+  .horizon-sub{font-size:12.5px;color:var(--text-dim);margin:2px 0 18px;line-height:1.55;max-width:720px;}
+  .horizon-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hairline);border:1px solid var(--hairline);margin-bottom:1px;}
+  .horizon-box{background:var(--panel);padding:16px 18px;}
+  .horizon-box h4{font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);}
+
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;}
+  .gauge-legend{display:flex;gap:16px;margin-top:6px;font-size:11.5px;}
+  .gauge-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+  .gauge-note{font-size:11px;color:var(--text-faint);margin-top:10px;line-height:1.5;text-align:center;}
+  .gauge-note a{color:var(--text-faint);}
+
+  .tl-axis{position:relative;height:100px;margin:26px 6px 8px;}
+  .tl-line{position:absolute;top:46px;left:0;right:0;height:2px;background:var(--hairline-strong);}
+  .tl-point{position:absolute;top:40px;width:12px;height:12px;border-radius:50%;transform:translateX(-50%);border:2px solid var(--panel);}
+  .tl-label{position:absolute;width:120px;transform:translateX(-50%);text-align:center;font-size:10.5px;line-height:1.4;color:var(--text-dim);}
+  .tl-label b{display:block;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text);}
+  .tl-label.up{top:-6px;}
+  .tl-label.down{top:56px;}
+  .tl-tick{position:absolute;top:52px;font-size:9.5px;color:var(--text-faint);transform:translateX(-50%);}
+
+  .growth-bars{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .growth-bar-row{display:grid;grid-template-columns:150px 1fr 60px;align-items:center;gap:10px;font-size:11.5px;}
+  .growth-bar-track{background:var(--hairline);border-radius:4px;height:14px;overflow:hidden;}
+  .growth-bar-fill{height:100%;border-radius:4px;}
+  .growth-note{font-size:11px;color:var(--text-faint);margin-top:12px;line-height:1.5;}
+  .growth-note a{color:var(--text-faint);}
+
+  .quote-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hairline);border:1px solid var(--hairline);}
+  .qs-card{background:var(--panel);padding:14px 16px;}
+  .qs-card .who{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;margin-bottom:6px;}
+  .qs-card .role{font-size:10.5px;color:var(--text-faint);margin-bottom:8px;}
+  .qs-card .txt{font-size:12px;color:var(--text-dim);line-height:1.55;margin:0;}
+  .qs-card .txt i{font-style:italic;color:var(--text);}
+  .qs-card a{font-size:10.5px;color:var(--amber-dim);text-decoration:none;}
+
+  @media (max-width:820px){
+    .horizon-row{grid-template-columns:1fr;}
+    .quote-strip{grid-template-columns:repeat(2,1fr);}
+  }
+
+  .astonishing{ background:var(--text);color:var(--panel); padding:18px 22px;margin-bottom:26px; display:flex;align-items:center;gap:16px; }
+  .astonishing .icon-wrap{ width:44px;height:44px;border-radius:50%;background:var(--amber); display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .astonishing .label{ font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700; letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:4px; }
+  .astonishing .line{font-size:15px;font-weight:500;line-height:1.5;}
+  .astonishing .line b{color:var(--amber);font-weight:600;}
+  .astonishing a{color:var(--panel);opacity:0.7;font-size:11.5px;text-decoration:underline;}
+
+  .counters{ display:grid;grid-template-columns:repeat(4,1fr);gap:1px; background:var(--hairline); border:1px solid var(--hairline); margin-bottom:26px; }
+  .counter{ background:var(--panel);padding:16px 18px; }
+  .counter .top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .icon-badge{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .icon-badge.i-breakthrough{background:var(--cyan-bg);color:var(--cyan);}
+  .icon-badge.i-watch{background:var(--amber-bg);color:var(--amber-dim);}
+  .icon-badge.i-risk{background:var(--red-bg);color:var(--red);}
+  .counter .label{ font-size:11px;text-transform:uppercase;letter-spacing:0.5px; color:var(--text-dim);line-height:1.4; }
+  .counter .value{ font-family:'IBM Plex Mono',monospace;font-size:25px;font-weight:600; color:var(--text); }
+  .counter .value.up{color:var(--cyan);} .counter .value.warn{color:var(--red);}
+  .counter .delta{font-size:11.5px;color:var(--text-faint);margin-top:4px;}
+  .counter .src{font-size:10px;color:var(--text-faint);margin-top:6px;}
+
+  .section-label{ font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600; letter-spacing:1px;text-transform:uppercase;color:var(--text-dim); margin:0 0 12px;display:flex;align-items:center;gap:10px; }
+  .section-label::after{content:'';flex:1;height:1px;background:var(--hairline-strong);}
+
+  .grid{ display:grid;grid-template-columns:repeat(2,1fr);gap:1px; background:var(--hairline);border:1px solid var(--hairline); margin-bottom:26px; }
+  .panel{ background:var(--panel);padding:18px 20px;position:relative; }
+  .top-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .num{ font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-faint); letter-spacing:0.5px; }
+  .panel h3{ font-family:'Space Grotesk',sans-serif;font-size:14.5px;font-weight:600; margin:8px 0 6px; }
+  .panel .body{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:0 0 10px;}
+  .panel .meta{ display:flex;justify-content:space-between;align-items:center; font-size:11px;color:var(--text-faint); }
+  .panel .meta a{color:var(--amber-dim);text-decoration:none;font-weight:500;}
+  .panel .meta a:hover{text-decoration:underline;}
+  .tag{ display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:20px; letter-spacing:0.3px;text-transform:uppercase;font-weight:500; }
+  .tag.breakthrough{background:var(--cyan-bg);color:var(--cyan);}
+  .tag.watch{background:var(--amber-bg);color:var(--amber-dim);}
+  .tag.risk{background:var(--red-bg);color:var(--red);}
+  .tag.real{background:var(--text);color:var(--panel);margin-left:6px;}
+
+  .quote-plaque{ background:var(--panel-raised);border:1px solid var(--hairline-strong); padding:20px 24px;margin-bottom:26px;display:flex;gap:18px;align-items:flex-start; }
+  .quote-plaque .icon-wrap{width:40px;height:40px;border-radius:50%;background:var(--amber-bg);color:var(--amber-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .quote-plaque blockquote{ margin:0;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:500; color:var(--text);line-height:1.5; }
+  .quote-plaque .attr{font-size:12px;color:var(--text-dim);margin-top:8px;}
+  .quote-plaque .attr a{color:var(--text-dim);}
+
+  .offduty{ border:1px solid var(--hairline-strong);background:var(--cyan-bg); padding:12px 18px;display:flex;align-items:center;gap:14px; }
+  .offduty .icon-wrap{width:32px;height:32px;border-radius:50%;background:var(--panel);color:var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .offduty .label{ font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600; color:var(--cyan);letter-spacing:1px;white-space:nowrap; }
+  .offduty .item{font-size:12.5px;color:var(--text-dim);}
+
+  footer{ margin-top:24px;font-size:11px;color:var(--text-faint); display:flex;justify-content:space-between; }
+
+  @media (max-width:760px){
+    .counters{grid-template-columns:repeat(2,1fr);} .grid{grid-template-columns:1fr;}
+    .masthead{flex-direction:column;align-items:flex-start;gap:8px;}
+    .astonishing{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<defs>
+  <symbol id="ico-radar" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="13" fill="currentColor" fill-opacity=".18"/>
+    <circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="16" cy="16" r="2.4" fill="currentColor"/>
+    <path d="M16 16 L24 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ico-robot" viewBox="0 0 32 32">
+    <rect x="4" y="4" width="4" height="4" rx="1" fill="currentColor" fill-opacity=".3"/>
+    <rect x="9" y="9" width="14" height="12" rx="3" fill="currentColor" fill-opacity=".2"/>
+    <circle cx="13.5" cy="15" r="1.8" fill="currentColor"/>
+    <circle cx="18.5" cy="15" r="1.8" fill="currentColor"/>
+    <rect x="12" y="22" width="8" height="4" rx="1.5" fill="currentColor" fill-opacity=".35"/>
+    <rect x="15" y="4" width="2" height="4" fill="currentColor" fill-opacity=".35"/>
+    <circle cx="16" cy="3" r="1.6" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-briefcase-down" viewBox="0 0 32 32">
+    <rect x="6" y="12" width="20" height="14" rx="2" fill="currentColor" fill-opacity=".22"/>
+    <path d="M12 12 V9 a2 2 0 0 1 2-2 h4 a2 2 0 0 1 2 2 v3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <path d="M16 16 v7 M12.5 20 L16 23.5 L19.5 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-server" viewBox="0 0 32 32">
+    <rect x="6" y="5" width="20" height="8" rx="2" fill="currentColor" fill-opacity=".22"/>
+    <rect x="6" y="19" width="20" height="8" rx="2" fill="currentColor" fill-opacity=".22"/>
+    <circle cx="10" cy="9" r="1.4" fill="currentColor"/>
+    <circle cx="10" cy="23" r="1.4" fill="currentColor"/>
+    <rect x="15" y="8" width="7" height="2" rx="1" fill="currentColor"/>
+    <rect x="15" y="22" width="7" height="2" rx="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-launch" viewBox="0 0 32 32">
+    <path d="M16 4 C21 8 22 15 19 21 L13 21 C10 15 11 8 16 4 Z" fill="currentColor" fill-opacity=".25"/>
+    <circle cx="16" cy="13" r="2.2" fill="currentColor"/>
+    <path d="M13 21 L10 27 M19 21 L22 27 M16 21 L16 27" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ico-chip" viewBox="0 0 32 32">
+    <rect x="9" y="9" width="14" height="14" rx="2" fill="currentColor" fill-opacity=".22"/>
+    <rect x="13" y="13" width="6" height="6" rx="1" fill="currentColor"/>
+    <path d="M12 4 V9 M20 4 V9 M12 23 V28 M20 23 V28 M4 12 H9 M4 20 H9 M23 12 H28 M23 20 H28" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ico-gavel" viewBox="0 0 32 32">
+    <rect x="14.5" y="4" width="7" height="11" rx="1.5" transform="rotate(40 18 9)" fill="currentColor" fill-opacity=".28"/>
+    <rect x="19" y="12" width="7" height="4" rx="1" transform="rotate(40 22 14)" fill="currentColor"/>
+    <path d="M8 20 L16 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <rect x="5" y="25" width="14" height="3" rx="1.4" fill="currentColor" fill-opacity=".3"/>
+  </symbol>
+  <symbol id="ico-shield" viewBox="0 0 32 32">
+    <path d="M16 4 L26 8 V15 C26 22 21 26 16 28 C11 26 6 22 6 15 V8 Z" fill="currentColor" fill-opacity=".22"/>
+    <path d="M11.5 16 L14.5 19 L21 12.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-bars" viewBox="0 0 32 32">
+    <rect x="6" y="18" width="5" height="9" rx="1" fill="currentColor" fill-opacity=".3"/>
+    <rect x="14" y="12" width="5" height="15" rx="1" fill="currentColor" fill-opacity=".5"/>
+    <rect x="22" y="6" width="5" height="21" rx="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-tank" viewBox="0 0 32 32">
+    <rect x="6" y="17" width="20" height="7" rx="2" fill="currentColor" fill-opacity=".26"/>
+    <circle cx="10" cy="25" r="2.6" fill="currentColor"/>
+    <circle cx="16" cy="25" r="2.6" fill="currentColor"/>
+    <circle cx="22" cy="25" r="2.6" fill="currentColor"/>
+    <rect x="12" y="11" width="8" height="6" rx="1.5" fill="currentColor" fill-opacity=".35"/>
+    <rect x="19" y="8" width="9" height="2.4" rx="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-buildings" viewBox="0 0 32 32">
+    <rect x="5" y="14" width="7" height="14" fill="currentColor" fill-opacity=".28"/>
+    <rect x="13" y="7" width="7" height="21" fill="currentColor" fill-opacity=".45"/>
+    <rect x="21" y="11" width="6" height="17" fill="currentColor"/>
+    <circle cx="8.5" cy="18" r=".9" fill="var(--panel)"/>
+    <circle cx="16.5" cy="12" r=".9" fill="var(--panel)"/>
+    <circle cx="16.5" cy="17" r=".9" fill="var(--panel)"/>
+    <circle cx="24" cy="16" r=".9" fill="var(--panel)"/>
+  </symbol>
+  <symbol id="ico-bolt" viewBox="0 0 32 32">
+    <path d="M18 3 L8 18 H14 L12 29 L25 13 H18 Z" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-flask" viewBox="0 0 32 32">
+    <path d="M13 4 H19 V11 L25 24 A3 3 0 0 1 22.3 28 H9.7 A3 3 0 0 1 7 24 L13 11 Z" fill="currentColor" fill-opacity=".22"/>
+    <path d="M11 20 H21" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="14" cy="24" r="1.3" fill="currentColor"/>
+    <circle cx="19" cy="25" r="1" fill="currentColor"/>
+    <rect x="12.5" y="3" width="7" height="2.4" rx="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-glitch-face" viewBox="0 0 32 32">
+    <rect x="5" y="5" width="22" height="17" rx="2.5" fill="currentColor" fill-opacity=".18"/>
+    <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+    <circle cx="20" cy="12" r="1.7" fill="currentColor"/>
+    <path d="M11 17 H21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2.2 2.2"/>
+    <rect x="4" y="24" width="6" height="2" fill="currentColor"/>
+    <rect x="13" y="24" width="4" height="2" fill="currentColor" fill-opacity=".5"/>
+    <rect x="20" y="24" width="8" height="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-eye" viewBox="0 0 32 32">
+    <path d="M4 16 C8 9 24 9 28 16 C24 23 8 23 4 16 Z" fill="currentColor" fill-opacity=".22"/>
+    <circle cx="16" cy="16" r="5" fill="currentColor"/>
+    <circle cx="17.5" cy="14.5" r="1.4" fill="var(--panel)"/>
+  </symbol>
+  <symbol id="ico-alert" viewBox="0 0 32 32">
+    <path d="M16 4 L29 26 H3 Z" fill="currentColor" fill-opacity=".3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <rect x="14.7" y="12" width="2.6" height="8" rx="1.2" fill="currentColor"/>
+    <circle cx="16" cy="22.5" r="1.5" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-quote" viewBox="0 0 32 32">
+    <path d="M6 12 C6 8 9 6 13 6 V9 C10.5 9 9.5 10.2 9.5 12 H13 V19 H6 Z" fill="currentColor"/>
+    <path d="M18 12 C18 8 21 6 25 6 V9 C22.5 9 21.5 10.2 21.5 12 H25 V19 H18 Z" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-smiley" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="12.5" fill="currentColor" fill-opacity=".2"/>
+    <circle cx="12" cy="13" r="1.8" fill="currentColor"/>
+    <circle cx="20" cy="13" r="1.8" fill="currentColor"/>
+    <path d="M10 19 C12 23 20 23 22 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ico-orbit" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="3.4" fill="currentColor"/>
+    <ellipse cx="16" cy="16" rx="13" ry="6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(20 16 16)"/>
+    <ellipse cx="16" cy="16" rx="13" ry="6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(-35 16 16)"/>
+    <circle cx="27" cy="12" r="1.8" fill="currentColor"/>
+    <circle cx="5" cy="21" r="1.8" fill="currentColor"/>
+  </symbol>
+  <symbol id="ico-brain" viewBox="0 0 32 32">
+    <path d="M12 6 C8 6 6 9 6 12 C4 13 4 17 6 18 C6 22 9 25 13 25 H16 V6 Z" fill="currentColor" fill-opacity=".22"/>
+    <path d="M20 6 C24 6 26 9 26 12 C28 13 28 17 26 18 C26 22 23 25 19 25 H16 V6 Z" fill="currentColor" fill-opacity=".38"/>
+    <path d="M13 11 H16 M13 16 H16 M13 21 H16 M19 11 H22 M19 16 H22 M19 21 H22" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  </symbol>
+</defs>
+</svg>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1><svg class="pictogram" width="26" height="26" style="color:var(--amber)"><use href="#ico-radar"/></svg>Signal Room</h1>
+      <div class="sub">A daily read on how fast AI is moving — real numbers and events, explained in plain language, always linked to the source.</div>
+    </div>
+    <div class="clock">
+      <span id="live-clock">--:--:--</span>
+      <span class="date">Amsterdam local time</span>
+    </div>
+  </div>
+
+  <div class="demo-banner">
+    <b>Early build.</b> The astonishing-news box and the marked "Real" cards use verified news from this month. The rest are placeholders showing the final shape.
+  </div>
+
+  <div class="horizon">
+    <div class="horizon-head">
+      <svg class="pictogram" width="22" height="22" style="color:var(--amber-dim)"><use href="#ico-orbit"/></svg>
+      <h2>The Horizon — AGI, ASI &amp; the exponential curve</h2>
+    </div>
+    <p class="horizon-sub">How close experts think we are to AI matching or exceeding human intelligence, and how fast the underlying technology is actually accelerating. The numbers below come from named surveys and public statements — not from this page's own guesswork.</p>
+
+    <div class="horizon-row">
+      <div class="horizon-box">
+        <h4>Odds AI ends humanity, per AI researchers</h4>
+        <div class="gauge-wrap">
+          <svg width="200" height="112" viewBox="0 0 200 112">
+            <path d="M20,100 A80,80 0 0,1 23.9,75.3" fill="none" stroke="var(--cyan)" stroke-width="14" stroke-linecap="round"/>
+            <path d="M23.9,75.3 A80,80 0 0,1 53,35.3" fill="none" stroke="var(--amber)" stroke-width="14"/>
+            <path d="M53,35.3 A80,80 0 0,1 180,100" fill="none" stroke="var(--red)" stroke-width="14" stroke-linecap="round"/>
+            <circle cx="21" cy="87.5" r="4" fill="var(--text)"/>
+            <line x1="100" y1="100" x2="27.6" y2="66" stroke="var(--text)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="5" fill="var(--text)"/>
+          </svg>
+          <div class="gauge-legend">
+            <span><span class="dot" style="background:var(--text)"></span>Mean: 14%</span>
+            <span><span class="dot" style="background:var(--text-faint)"></span>Median: 5%</span>
+          </div>
+          <div class="gauge-note">2,778 AI researchers, AI Impacts 2023 survey. A separate 2026 estimate from Geoffrey Hinton puts it at 10–20%. <a href="https://aiguide.substack.com/p/do-half-of-ai-researchers-believe" target="_blank" rel="noopener">source ↗</a></div>
+        </div>
+      </div>
+
+      <div class="horizon-box">
+        <h4>AGI predictions keep moving closer</h4>
+        <div class="tl-axis">
+          <div class="tl-line"></div>
+          <div class="tl-tick" style="left:5%">2022</div>
+          <div class="tl-tick" style="left:50%">2035</div>
+          <div class="tl-tick" style="left:100%">2060</div>
+          <div class="tl-point up" style="left:100%;background:var(--red)"></div>
+          <div class="tl-label up" style="left:100%"><b>2060</b>2022 survey estimate</div>
+          <div class="tl-point down" style="left:67.5%;background:var(--amber)"></div>
+          <div class="tl-label down" style="left:67.5%"><b>2047</b>2023 survey estimate</div>
+          <div class="tl-point up" style="left:32.5%;background:var(--cyan)"></div>
+          <div class="tl-label up" style="left:32.5%"><b>2033</b>Metaculus, 2026</div>
+          <div class="tl-point down" style="left:15%;background:var(--text)"></div>
+          <div class="tl-label down" style="left:15%"><b>2026–30</b>Amodei &amp; Hassabis</div>
+        </div>
+        <div class="gauge-note" style="text-align:left">Each newer estimate lands earlier than the last. Metaculus forecasters now put 25% probability on AGI by 2029. <a href="https://www.veracalloway.com/blog/ai-culture/agi-timeline/" target="_blank" rel="noopener">source ↗</a></div>
+      </div>
+    </div>
+
+    <div class="horizon-box" style="margin-top:1px;">
+      <h4>How fast AI compute is really growing</h4>
+      <div class="growth-bars">
+        <div class="growth-bar-row">
+          <span>Mobile phones (1980–87)</span>
+          <div class="growth-bar-track"><div class="growth-bar-fill" style="width:40%;background:var(--text-faint)"></div></div>
+          <span>2×/yr</span>
+        </div>
+        <div class="growth-bar-row">
+          <span>Solar capacity (2001–10)</span>
+          <div class="growth-bar-track"><div class="growth-bar-fill" style="width:30%;background:var(--text-faint)"></div></div>
+          <span>1.5×/yr</span>
+        </div>
+        <div class="growth-bar-row">
+          <span>Genome sequencing (2008–15)</span>
+          <div class="growth-bar-track"><div class="growth-bar-fill" style="width:66%;background:var(--text-faint)"></div></div>
+          <span>3.3×/yr</span>
+        </div>
+        <div class="growth-bar-row">
+          <span><b>AI training compute (2010–24)</b></span>
+          <div class="growth-bar-track"><div class="growth-bar-fill" style="width:90%;background:var(--red)"></div></div>
+          <span><b>4.5×/yr</b></span>
+        </div>
+      </div>
+      <div class="growth-note">AI training compute has grown faster than mobile-phone adoption, solar power, or genome sequencing ever did — doubling roughly every 5 months in recent years. <a href="https://epoch.ai/blog/training-compute-of-frontier-ai-models-grows-by-4-5x-per-year" target="_blank" rel="noopener">Source: Epoch AI ↗</a></div>
+    </div>
+
+    <h4 style="font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;margin:18px 0 8px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);">What the people building it are saying</h4>
+    <div class="quote-strip">
+      <div class="qs-card">
+        <div class="who">Demis Hassabis</div>
+        <div class="role">CEO, Google DeepMind</div>
+        <p class="txt"><i>"AGI will begin to happen in 2030."</i></p>
+        <a href="https://arxiv.org/pdf/2508.19749" target="_blank" rel="noopener">source ↗</a>
+      </div>
+      <div class="qs-card">
+        <div class="who">Ilya Sutskever</div>
+        <div class="role">Founder, Safe Superintelligence Inc.</div>
+        <p class="txt"><i>"I'm not saying how, and I'm not saying when. I'm saying that it will."</i></p>
+        <a href="https://www.veracalloway.com/blog/ai-culture/agi-timeline/" target="_blank" rel="noopener">source ↗</a>
+      </div>
+      <div class="qs-card">
+        <div class="who">Geoffrey Hinton</div>
+        <div class="role">Nobel laureate, AI researcher</div>
+        <p class="txt">Has shortened his own timeline to five–twenty years, and puts the odds of AI causing human extinction at 10–20%.</p>
+        <a href="https://www.veracalloway.com/blog/ai-culture/agi-timeline/" target="_blank" rel="noopener">source ↗</a>
+      </div>
+      <div class="qs-card">
+        <div class="who">Yann LeCun</div>
+        <div class="role">AI researcher, skeptic</div>
+        <p class="txt">Argues today's AI architectures cannot reach human-level intelligence at all, no matter how much they're scaled up.</p>
+        <a href="https://www.veracalloway.com/blog/ai-culture/agi-timeline/" target="_blank" rel="noopener">source ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="astonishing">
+    <div class="icon-wrap"><svg class="pictogram" width="24" height="24" style="color:var(--text)"><use href="#ico-alert"/></svg></div>
+    <div>
+      <div class="label">Astonishing news of the day</div>
+      <div class="line">The world installed a robot every <b>51 seconds</b> in 2025 — <b>621,000</b> industrial robots in one year, 15% more than the year before.</div>
+      <a href="https://www.manufacturingdive.com/news/us-robotics-rebounded-2025-on-track-more-growth-ifr-automate-2026/823874/" target="_blank" rel="noopener">source &#8599;</a>
+    </div>
+  </div>
+
+  <div class="counters">
+    <div class="counter">
+      <div class="top"><div class="icon-badge i-breakthrough"><svg class="pictogram" width="22" height="22"><use href="#ico-robot"/></svg></div><span class="label">Robots installed worldwide, 2025</span></div>
+      <div class="value up">621,000</div>
+      <div class="delta">up 15% versus the year before</div>
+      <div class="src">Source: International Federation of Robotics</div>
+    </div>
+    <div class="counter">
+      <div class="top"><div class="icon-badge i-risk"><svg class="pictogram" width="22" height="22"><use href="#ico-briefcase-down"/></svg></div><span class="label">US layoffs blamed on AI, 2025</span></div>
+      <div class="value warn">~55,000</div>
+      <div class="delta">per Challenger, Gray &amp; Christmas</div>
+      <div class="src">Source: CNBC, Jan 2026</div>
+    </div>
+    <div class="counter">
+      <div class="top"><div class="icon-badge i-watch"><svg class="pictogram" width="22" height="22"><use href="#ico-server"/></svg></div><span class="label">New datacentre capacity, 2026 (sample)</span></div>
+      <div class="value">38.2 GW</div>
+      <div class="delta">placeholder until connected</div>
+      <div class="src">Sample figure</div>
+    </div>
+    <div class="counter">
+      <div class="top"><div class="icon-badge i-breakthrough"><svg class="pictogram" width="22" height="22"><use href="#ico-launch"/></svg></div><span class="label">Major model launches, July 2026</span></div>
+      <div class="value up">5</div>
+      <div class="delta">GPT-5.6, Grok 4.5, Muse Spark 1.1 and more</div>
+      <div class="src">Source: AIapps.com roundup</div>
+    </div>
+  </div>
+
+  <div class="section-label">Ten things worth watching</div>
+  <div class="grid">
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-breakthrough"><svg class="pictogram" width="20" height="20"><use href="#ico-chip"/></svg></div><span class="num">01 — new AI models</span></div>
+      <h3>Three big AI companies released new models on the same day <span class="tag real">Real</span></h3>
+      <p class="body">On 9 July, OpenAI, xAI and Meta all launched new AI models within 24 hours of each other. It kicked off a price war — some of these models now cost a fraction of what they used to, making powerful AI cheaper for everyone.</p>
+      <div class="meta"><span class="tag breakthrough">Breakthrough</span><a href="https://www.aiapps.com/blog/july-ai-mega-update-major-breakthroughs-launches/" target="_blank" rel="noopener">read more &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-watch"><svg class="pictogram" width="20" height="20"><use href="#ico-gavel"/></svg></div><span class="num">02 — rules and lawmakers</span></div>
+      <h3>Europe's AI law became enforceable this month <span class="tag real">Real</span></h3>
+      <p class="body">As of 10 July, companies operating in the EU must tell users when they're talking to an AI chatbot or assistant. It's the first rule from the EU AI Act that carries real penalties.</p>
+      <div class="meta"><span class="tag watch">Watch</span><a href="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai" target="_blank" rel="noopener">read more &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-watch"><svg class="pictogram" width="20" height="20"><use href="#ico-shield"/></svg></div><span class="num">03 — keeping AI safe</span></div>
+      <h3>Researchers found a hidden pattern inside an AI model</h3>
+      <p class="body">Sample entry. This is where a plain-language explanation of a safety finding would go: what researchers found, why it matters, and what it means for people using AI day to day.</p>
+      <div class="meta"><span class="tag watch">Watch</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-risk"><svg class="pictogram" width="20" height="20"><use href="#ico-bars"/></svg></div><span class="num">04 — jobs and the economy</span></div>
+      <h3>Two AI bosses disagree loudly on jobs <span class="tag real">Real</span></h3>
+      <p class="body">Anthropic's leaders keep warning that AI could replace a large share of entry-level office jobs within a few years. OpenAI's CEO pushes back, saying a "jobs apocalypse" probably won't happen. The hiring data so far is mixed.</p>
+      <div class="meta"><span class="tag risk">Risk</span><a href="https://www.axios.com/2026/05/27/ai-hype-doom-openai-anthropic" target="_blank" rel="noopener">read more &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-risk"><svg class="pictogram" width="20" height="20"><use href="#ico-tank"/></svg></div><span class="num">05 — war and world power</span></div>
+      <h3>A country expands its use of AI-guided systems</h3>
+      <p class="body">Sample entry. Would explain, in plain terms, which country, which kind of system, and why arms-control experts are watching.</p>
+      <div class="meta"><span class="tag risk">Risk</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-watch"><svg class="pictogram" width="20" height="20"><use href="#ico-buildings"/></svg></div><span class="num">06 — big tech power</span></div>
+      <h3>A major AI company changes hands or teams up</h3>
+      <p class="body">Sample entry. Would name the companies, explain the deal in one sentence, and note who gains more influence over AI as a result.</p>
+      <div class="meta"><span class="tag watch">Watch</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-risk"><svg class="pictogram" width="20" height="20"><use href="#ico-bolt"/></svg></div><span class="num">07 — power and chips</span></div>
+      <h3>A power grid warns it can't keep up with AI datacentres</h3>
+      <p class="body">Sample entry. Would state which region, how much extra electricity AI datacentres need there, and what that means for people's power bills.</p>
+      <div class="meta"><span class="tag risk">Risk</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-breakthrough"><svg class="pictogram" width="20" height="20"><use href="#ico-flask"/></svg></div><span class="num">08 — AI in science</span></div>
+      <h3>AI shortens the time it takes to test a new medicine</h3>
+      <p class="body">Sample entry. Would explain, without jargon, which lab, which disease, and roughly how much faster the discovery went.</p>
+      <div class="meta"><span class="tag breakthrough">Breakthrough</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-watch"><svg class="pictogram" width="20" height="20"><use href="#ico-glitch-face"/></svg></div><span class="num">09 — fake content online</span></div>
+      <h3>A platform starts labelling AI-made videos and images</h3>
+      <p class="body">Sample entry. Would name the platform, explain in one line how the labelling works, and note its known blind spots.</p>
+      <div class="meta"><span class="tag watch">Watch</span><a href="#">source &#8599;</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="top-row"><div class="icon-badge i-risk"><svg class="pictogram" width="20" height="20"><use href="#ico-eye"/></svg></div><span class="num">10 — society and everyday life</span></div>
+      <h3>A city tests AI cameras in public, then pulls back</h3>
+      <p class="body">Sample entry. Would explain what the system did, why residents objected, and what happened next.</p>
+      <div class="meta"><span class="tag risk">Risk</span><a href="#">source &#8599;</a></div>
+    </div>
+
+  </div>
+
+  <div class="quote-plaque">
+    <div class="icon-wrap"><svg class="pictogram" width="20" height="20"><use href="#ico-quote"/></svg></div>
+    <div>
+      <blockquote>I don't think this is on people's radar.</blockquote>
+      <div class="attr">— Dario Amodei, CEO of Anthropic, on the pace of AI job disruption &middot; <a href="https://www.yahoo.com/news/anthropic-ceo-says-ai-could-185145872.html" target="_blank" rel="noopener">source &#8599;</a></div>
+    </div>
+  </div>
+
+  <div class="offduty">
+    <div class="icon-wrap"><svg class="pictogram" width="18" height="18"><use href="#ico-smiley"/></svg></div>
+    <span class="label">Off duty</span>
+    <span class="item">Sample: the daily pick lands here — one genuinely funny or absurd AI story a day, so this page never reads like a disaster report.</span>
+  </div>
+
+  <footer>
+    <span>Signal Room &middot; early build</span>
+    <span>Refreshes daily once the research script is connected</span>
+  </footer>
+
+</div>
+
+<script>
+  function tick(){
+    const now = new Date();
+    document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-GB');
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
