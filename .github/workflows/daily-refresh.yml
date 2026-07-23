@@ -1,0 +1,51 @@
+# Save this file as: .github/workflows/daily-refresh.yml in your repo.
+#
+# What it does: once a day, it runs content_engine.py, which asks Claude
+# to research the ten categories and write signal_room_data.json. It then
+# commits that file back to the repo. If your dashboard is hosted on
+# GitHub Pages or Vercel and reads that file, the site updates itself —
+# no one has to press a button.
+#
+# One-time setup:
+#   1. Push signal-room.html and content_engine.py to a GitHub repo.
+#   2. In the repo, go to Settings -> Secrets and variables -> Actions,
+#      and add a secret named ANTHROPIC_API_KEY with your key from
+#      console.anthropic.com.
+#   3. Add this file at .github/workflows/daily-refresh.yml.
+#   4. Turn on GitHub Pages (Settings -> Pages) or connect the repo to
+#      Vercel, pointing at signal-room.html.
+
+name: Daily Signal Room refresh
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # every day at 06:00 UTC (08:00 Amsterdam time)
+  workflow_dispatch: {}     # lets you also trigger it manually on GitHub
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install anthropic
+
+      - name: Run the content engine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python content_engine.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "signal-room-bot"
+          git config user.email "actions@github.com"
+          git add signal_room_data.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Daily refresh"
+          git push
